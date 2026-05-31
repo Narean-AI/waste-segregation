@@ -76,6 +76,16 @@ unsafe_allow_html=True)
 # Load Model
 model_path = Path(settings.DETECTION_MODEL)
 
+# Download model if not exists (for Streamlit Cloud)
+if not model_path.exists():
+    import urllib.request
+    st.info("Downloading model weights... please wait.")
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    # Using the official YOLOv8x weights as fallback or your specific hosted URL
+    url = "https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8x.pt"
+    urllib.request.urlretrieve(url, model_path)
+    st.success("Model downloaded!")
+
 try:
     model = helper.load_model(model_path)
 

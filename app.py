@@ -18,6 +18,14 @@ init_dashboard()
 # Sidebar
 st.sidebar.title("♻ EcoVision AI")
 
+# Sidebar - Source selection
+st.sidebar.subheader("Detection Source")
+source_radio = st.sidebar.radio(
+    "Select Source",
+    ["Webcam", "Upload Image"],
+    index=1  # Default to Upload for Cloud stability
+)
+
 # Main Header
 st.markdown("""
 # ♻ EcoVision AI
@@ -81,7 +89,7 @@ if not model_path.exists():
     import urllib.request
     st.info("Downloading model weights... please wait.")
     model_path.parent.mkdir(parents=True, exist_ok=True)
-    # Using the official YOLOv8x weights as fallback or your specific hosted URL
+    # Using the official YOLOv8x weights as fallback
     url = "https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8x.pt"
     urllib.request.urlretrieve(url, model_path)
     st.success("Model downloaded!")
@@ -99,8 +107,25 @@ except Exception as ex:
 
     st.stop()
 
-# Webcam Detection
-helper.play_webcam(model)
+# Detection logic
+if source_radio == "Webcam":
+    helper.play_webcam(model)
+elif source_radio == "Upload Image":
+    uploaded_file = st.sidebar.file_uploader(
+        "Choose an image...", type=["jpg", "jpeg", "png", "bmp", "webp"]
+    )
+    if uploaded_file is not None:
+        import numpy as np
+        from PIL import Image
+        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        image = cv2.imdecode(file_bytes, 1)
+        st.image(image, channels="BGR", caption="Uploaded Image", use_container_width=True)
+        
+        if st.button("🚀 Detect Waste"):
+            st_frame = st.empty()
+            # Convert BGR to RGB if needed by helper, but helper seems to handle cv2 images
+            helper._display_detected_frames(model, st_frame, image)
+            st.success("Detection Complete!")
 
 # Footer
 st.sidebar.markdown("---")

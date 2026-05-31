@@ -116,6 +116,7 @@ elif source_radio == "Upload Image":
     )
     if uploaded_file is not None:
         import numpy as np
+        import cv2
         from PIL import Image
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         image = cv2.imdecode(file_bytes, 1)
@@ -123,7 +124,6 @@ elif source_radio == "Upload Image":
         
         if st.button("🚀 Detect Waste"):
             st_frame = st.empty()
-            # Convert BGR to RGB if needed by helper, but helper seems to handle cv2 images
             helper._display_detected_frames(model, st_frame, image)
             st.success("Detection Complete!")
 
